@@ -1,6 +1,7 @@
 package lgo
 
 import (
+	"math"
 	"slices"
 	"sort"
 	"strconv"
@@ -758,4 +759,70 @@ func smallestChair(times [][]int, targetFriend int) int {
 	}
 
 	return 0
+}
+
+func longestCommonSubsequence(text1 string, text2 string) int {
+	if len(text1) == 0 || len(text2) == 0 {
+		return 0
+	}
+
+	if text1[len(text1)-1] == text2[len(text2)-1] {
+		return 1 + longestCommonSubsequence(text1[:len(text1)-1], text2[:len(text2)-1])
+	} else {
+		return int(math.Max(float64(longestCommonSubsequence(text1[:len(text1)-1], text2)), float64(longestCommonSubsequence(text1, text2[:len(text2)-1]))))
+	}
+}
+
+func longestCommonSubsequenceDp(text1 string, text2 string) int {
+	m, n := len(text1), len(text2)
+	if m == 0 || n == 0 {
+		return 0
+	}
+
+	dp := make([][]int, m+1)
+	dp[0] = make([]int, n+1)
+
+	for i := 1; i <= m; i++ {
+		dp[i] = make([]int, n+1)
+		for j := 1; j <= n; j++ {
+			if text1[i-1] == text2[j-1] {
+				dp[i][j] = dp[i-1][j-1] + 1
+			} else {
+				dp[i][j] = int(math.Max(float64(dp[i-1][j]), float64(dp[i][j-1])))
+			}
+		}
+	}
+	return dp[m][n]
+}
+
+// 2275. Largest Combination With Bitwise AND Greater Than Zero
+func largestCombination(candidates []int) int {
+	bitCount := make([]int, 24)
+	for i := 0; i < len(candidates); i++ {
+		for j := 0; (1 << j) <= candidates[i]; j++ {
+			if candidates[i]&(1<<j) != 0 {
+				bitCount[j]++
+			}
+		}
+	}
+	max := bitCount[0]
+	for i := 1; i < 24; i++ {
+		if bitCount[i] > max {
+			max = bitCount[i]
+		}
+	}
+	return max
+}
+
+// 1829. Maximum XOR for Each Query
+
+func getMaximumXor(nums []int, maximumBit int) []int {
+	cur, nl := 0, len(nums)
+	result := make([]int, nl)
+	max := (1 << maximumBit) - 1 //left shift operator equivalent to math.Pow(2, maximumBit)
+	for i := 0; i < nl; i++ {
+		cur ^= nums[i] // remove condition (0 <= nums[i] < 2maximumBit) then need limit with cur ^= (nums[i] & max)
+		result[nl-i-1] = max ^ cur
+	}
+	return result
 }

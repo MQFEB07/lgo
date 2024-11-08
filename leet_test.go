@@ -492,3 +492,55 @@ func TestMaxUniqueSplit(t *testing.T) {
 		}
 	}
 }
+
+func TestTrie(t *testing.T) {
+	trie := NewTrie()
+
+	// Thêm từ vào Trie
+	words := []string{"go", "golang", "gopher", "good", "game"}
+	for _, word := range words {
+		trie.Insert(word)
+	}
+
+	// Kiểm tra sự tồn tại của từ
+	fmt.Println(trie.Search("go"))     // true
+	fmt.Println(trie.Search("golang")) // true
+	fmt.Println(trie.Search("goph"))   // false
+
+	// Kiểm tra tiền tố
+	fmt.Println(trie.StartsWith("go"))  // true
+	fmt.Println(trie.StartsWith("gop")) // true
+	fmt.Println(trie.StartsWith("gam")) // true
+	fmt.Println(trie.StartsWith("xyz")) // false
+}
+
+func TestLongestCommonSubsequence(t *testing.T) {
+	tx1 := "AXTY"
+	tx2 := "AYZX"
+	expected := 2
+	result := longestCommonSubsequenceDp(tx1, tx2)
+	if expected != result {
+		t.Errorf("Expected %d but got %d", expected, result)
+	}
+}
+
+func TestLargestCombination(t *testing.T) {
+	input := []int{16, 17, 71, 62, 12, 24, 14}
+	expected := 4
+	result := largestCombination(input)
+	if expected != result {
+		t.Errorf("Expected %d but got %d", expected, result)
+	}
+}
+
+func TestGetMaximumXor(t *testing.T) {
+	nums := []int{0, 1, 2, 2, 5, 7}
+	maximumBit := 3
+	expected := []int{4, 3, 6, 4, 6, 7}
+	result := getMaximumXor(nums, maximumBit)
+	for i := 0; i < len(expected); i++ {
+		if result[i] != expected[i] {
+			t.Errorf("Expected %d but got %d", expected[i], result[i])
+		}
+	}
+}
