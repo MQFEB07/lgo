@@ -1,6 +1,7 @@
 package lgo
 
 import (
+	"container/heap"
 	"math"
 	"slices"
 	"sort"
@@ -825,4 +826,143 @@ func getMaximumXor(nums []int, maximumBit int) []int {
 		result[nl-i-1] = max ^ cur
 	}
 	return result
+}
+
+// 2070. Most Beautiful Item for Each Query
+func maximumBeauty(items [][]int, queries []int) []int {
+	result := make([]int, len(queries))
+	type IndexedValue struct {
+		Value int
+		Index int
+	}
+	indexedValues := make([]IndexedValue, len(queries))
+	for i, value := range queries { // put data into struct array and sort
+		indexedValues[i] = IndexedValue{Value: value, Index: i}
+	}
+
+	sort.Slice(indexedValues, func(i, j int) bool { // sort ascending
+		return indexedValues[i].Value < indexedValues[j].Value
+	})
+
+	sort.Slice(items, func(i, j int) bool { // sort ascending items
+		return items[i][0] < items[j][0]
+	})
+	for i, j := 0, 0; i < len(queries); i++ {
+		maxb := 0
+		if i > 0 {
+			maxb = result[indexedValues[i-1].Index]
+		}
+		for ; j < len(items); j++ {
+			if indexedValues[i].Value >= items[j][0] {
+				maxb = max(maxb, items[j][1])
+			} else {
+				break
+			}
+		}
+		result[indexedValues[i].Index] = maxb
+	}
+	return result
+}
+
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+// Định nghĩa MaxHeap
+type MaxHeapBt []int
+
+func (h MaxHeapBt) Len() int           { return len(h) }
+func (h MaxHeapBt) Less(i, j int) bool { return h[i] > h[j] }
+func (h MaxHeapBt) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+
+func (h *MaxHeapBt) Push(x interface{}) {
+	*h = append(*h, x.(int))
+}
+
+func (h *MaxHeapBt) Pop() interface{} {
+	x := (*h)[len(*h)-1]
+	*h = (*h)[:len(*h)-1]
+	return x
+}
+
+func maximumBeautyHeap(items [][]int, queries []int) []int {
+	// Sắp xếp items theo price tăng dần
+	sort.Slice(items, func(i, j int) bool {
+		return items[i][0] < items[j][0]
+	})
+
+	// Tạo một slice để lưu kết quả
+	result := make([]int, len(queries))
+
+	// Tạo một slice các query với index
+	indexedQueries := make([][2]int, len(queries))
+	for i, q := range queries {
+		indexedQueries[i] = [2]int{q, i}
+	}
+
+	// Sắp xếp queries theo giá trị tăng dần
+	sort.Slice(indexedQueries, func(i, j int) bool {
+		return indexedQueries[i][0] < indexedQueries[j][0]
+	})
+
+	// Khởi tạo max heap
+	h := &MaxHeapBt{}
+	heap.Init(h)
+
+	itemIndex := 0
+
+	// Xử lý từng query
+	for _, query := range indexedQueries {
+		// Thêm tất cả items có giá <= query[0] vào heap
+		for itemIndex < len(items) && items[itemIndex][0] <= query[0] {
+			heap.Push(h, items[itemIndex][1]) // Thêm beauty value
+			itemIndex++
+		}
+		// Heap tự sắp xếp theo giá trị khởi tạo (maxHeap) => phần tử đầu tiên là lớn nhất
+
+		// Nếu heap không rỗng, lấy giá trị beauty lớn nhất
+		if h.Len() > 0 {
+			result[query[1]] = (*h)[0] // Lấy giá trị lớn nhất từ MaxHeapBt
+		} else {
+			result[query[1]] = 0
+		}
+	}
+
+	return result
+}
+
+// 1574. Shortest Subarray to be Removed to Make Array Sorted
+func findLengthOfShortestSubarray(arr []int) int {
+	i, j, n := 0, len(arr)-1, len(arr)
+
+	for i+1 < n && arr[i] <= arr[i+1] {
+		i++
+	}
+	if i == n-1 {
+		return 0
+	}
+	for j-1 >= i && arr[j] >= arr[j-1] {
+		j--
+	}
+	result := min(n-i-1, j)
+
+	left, right := 0, j
+	for left <= i {
+		for right < n && arr[right] < arr[left] {
+			right++
+		}
+		result = min(result, right-left-1)
+		left++
+	}
+	return result
+}
+
+func min(a, b int) int {
+	if a > b {
+		return b
+	}
+	return a
 }
